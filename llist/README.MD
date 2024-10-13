@@ -9,3 +9,5 @@ Linked list implementation
 
 
 <i> Note: </i> this was part of a larger assignment in my 'C programming' course.
+
+![records_view](/utils/records_view.png)
