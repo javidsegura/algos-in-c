@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "struct.h"
+#include <dirent.h>
+#include <string.h>
+#include "hospital.h"
 #include "ui.h"
+
+#define NAME_SIZE 50
 
 /*
 Central part of the program. 
@@ -12,12 +16,14 @@ void read_records();
 void free_records();
 void delete_record(int ID);
 void update_record(int ID);
+void load_all_records();
 
 int main()
 {  
       atexit(free_records); 
       atexit(bye_screen);
 
+      load_all_records();  // Load existing records
       welcome_screen();
 
       while (1){
@@ -87,6 +93,7 @@ void add_patient(client_instance **tail)
             *tail = new_node;
             id = new_node->id;
       }
+      save_to_file(id == head->id ? head : *tail);
       printf("\nRecord added succesfully. Record ID is '%d'", id);
 }
 
@@ -163,8 +170,9 @@ void update_record(int ID){
       }
       
       populate_struct(&(*current_node), 'u'); 
+      save_to_file(current_node);  // Save updated information
 
-      printf("\nRecord edited succesfully. Same record ID:  '%d'", current_node->id);
+      printf("\nRecord edited successfully. Same record ID: '%d'", current_node->id);
 }
 
 void free_records(){
@@ -180,6 +188,26 @@ void free_records(){
             current_node = current_node->next;
             free(temp);
       }
+}
 
-
+void load_all_records() {
+    DIR *dir;
+    struct dirent *ent;
+    
+    dir = opendir(RECORDS_DIR);
+    if (dir == NULL) {
+        return;  
+    }
+    
+    while ((ent = readdir(dir)) != NULL) {
+        if (strstr(ent->d_name, FILE_EXT) != NULL) {
+            // Extract ID from filename
+            int id;
+            char name[NAME_SIZE];
+            sscanf(ent->d_name, "%s_%d.txt", name, &id);
+            load_from_file(name, id);
+            if (id >= counter) counter = id + 1;  // Update counter for new IDs
+        }
+    }
+    closedir(dir);
 }

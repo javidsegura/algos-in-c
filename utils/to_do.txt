@@ -1,0 +1,3 @@
+1. Add name to files
+2. Redifine in a .c
+3. Comment code 
